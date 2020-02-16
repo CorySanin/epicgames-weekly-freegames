@@ -56,7 +56,9 @@ def execute():
 
         el.send_keys(EMAIL)
         browser.find_element_by_id('password').send_keys(PASSWORD)
-        browser.find_element_by_id('login').click()
+        WebDriverWait(browser, TIMEOUT).until(
+            EC.element_to_be_clickable((By.ID, 'login'))
+        ).click()
 
         if TOTP != None:
             logger.debug('wait for 2fa field on login page')
@@ -155,10 +157,10 @@ def execute():
                 except (NoSuchElementException, LookupError) as ex:
                     logger.debug('no refund conditions popup to accept')
 
-                # need to wait for the INSTALL message before proceeding
-                logger.debug('wait for page demanding that we download Epic Games Launcher')
+                # Purchase should be complete. Checking for confirmation
+                logger.debug('Wait for confirmation that checkout is complete')
                 WebDriverWait(browser, TIMEOUT).until(
-                    EC.visibility_of_element_located((By.XPATH, "//h1/span[contains(text(),'Install')]"))
+                    EC.visibility_of_element_located((By.XPATH, "//h1/span[contains(text(),'Install')]|//span[contains(text(),'Thank you for buying')]"))
                 )
                 logger.info('obtained game %s. Price was %s and %s', name, price, expires)
             elif purchase_button.text == 'SEE EDITIONS':
